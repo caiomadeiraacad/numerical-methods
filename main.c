@@ -1,27 +1,73 @@
-#include<stdio.h>
-#include<stdlib.h>
-#include<math.h>
-#include "polynomial.h"
+/*
+ * Métodos Numéricos - Trabalho II
+ * Autor: Caio Madeira e João Sperb
+ * Compilação: gcc -O2 main.c -o main
+ * Execução:   ./main 980
+ *
+ * Resultado para 980 figurinhas:
+ * - 50%: 7107 figurinhas
+ * - 75%: 7968 figurinhas
+ * - 95%: 9657 figurinhas
+ */
+#include <stdio.h>
+#include <stdlib.h>
 
+int main(int argc, char *argv[]) {
+    if (argc < 2) {
+        printf("Uso: %s <numero_de_figurinhas>\n", argv[0]);
+        return 1;
+    }
 
-int main(void)
-{
+    int N = atoi(argv[1]);
+    if (N <= 0) {
+        printf("O numero de figurinhas deve ser maior que zero.\n");
+        return 1;
+    }
 
-    //double coef[] = { 1, -3, 2, -4 };
-    //double coef[] = { -4, 2, -3, 1 };
-    // size_t array_size = sizeof(coef) / sizeof(coef[0]); 
+    double *P = (double *)calloc(N + 1, sizeof(double));
+    if (P == NULL) {
+        perror("Erro ao alocar memoria");
+        return 1;
+    }
 
-    // printf("coef size = %zu\n", array_size);
-    // print_polynomial_terms(coef);
+    P[0] = 1.0;
 
-    // printf("an=%.f\n", max_coef(coef, array_size));
+    int compradas = 0;
+    int meta50 = 0, meta75 = 0, meta95 = 0;
 
-    // printf("%.8f\n", secant_method(0.23, 3.415, 2));
+    // Simula a compra de figurinhas ate atingir mais de 95% de chance de completar
+    while (P[N] <= 0.95) {
+        compradas++;
 
-    printf("f(%d)=%.8f\n", 1, f(1, 5, 2));
-    printf("d(%d)=%.8f\n", 1, d(1, 5, 2));
+        // Atualiza os nodos de tras para frente para usar apenas um vetor
+        for (int k = N; k >= 1; k--) {
+            double prob_repetida = (double)k / N;
+            double prob_inedita  = (double)(N - (k - 1)) / N;
 
-    printf("%.8f\n", newton_raphson(1, 5, 2));
+            P[k] = P[k] * prob_repetida + P[k - 1] * prob_inedita;
+        }
 
+        // Apos a 1a compra, é impossivel continuar com 0 figurinhas
+        P[0] = 0.0;
+
+        // Registra o momento em que cada limite de probabilidade é ultrapassado
+        if (meta50 == 0 && P[N] > 0.50) {
+            meta50 = compradas;
+        }
+        if (meta75 == 0 && P[N] > 0.75) {
+            meta75 = compradas;
+        }
+        if (meta95 == 0 && P[N] > 0.95) {
+            meta95 = compradas;
+        }
+    }
+
+    // Exibe a saida no formato pedido na especificacao
+    printf("// %d figurinhas\n", N);
+    printf("Para chegar a 50%% comprar %d figurinhas\n", meta50);
+    printf("Para chegar a 75%% comprar %d figurinhas\n", meta75);
+    printf("Para chegar a 95%% comprar %d figurinhas\n", meta95);
+
+    free(P);
     return 0;
 }
