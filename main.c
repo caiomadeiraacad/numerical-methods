@@ -35,11 +35,9 @@ int main(int argc, char *argv[]) {
     int compradas = 0;
     int meta50 = 0, meta75 = 0, meta95 = 0;
 
-    // Simula a compra de figurinhas ate atingir mais de 95% de chance de completar
     while (P[N] <= 0.95) {
         compradas++;
 
-        // Atualiza os nodos de tras para frente para usar apenas um vetor
         for (int k = N; k >= 1; k--) {
             double prob_repetida = (double)k / N;
             double prob_inedita  = (double)(N - (k - 1)) / N;
@@ -47,10 +45,8 @@ int main(int argc, char *argv[]) {
             P[k] = P[k] * prob_repetida + P[k - 1] * prob_inedita;
         }
 
-        // Apos a 1a compra, é impossivel continuar com 0 figurinhas
         P[0] = 0.0;
 
-        // Registra o momento em que cada limite de probabilidade é ultrapassado
         if (meta50 == 0 && P[N] > 0.50) {
             meta50 = compradas;
         }
@@ -62,7 +58,6 @@ int main(int argc, char *argv[]) {
         }
     }
 
-    // Exibe a saida no formato pedido na especificacao
     printf("// %d figurinhas\n", N);
     printf("Para chegar a 50%% comprar %d figurinhas\n", meta50);
     printf("Para chegar a 75%% comprar %d figurinhas\n", meta75);
